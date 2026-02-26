@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Mail, Settings, Copy, Check, ExternalLink, Sparkles, Calendar } from "lucide-react";
+import { Mail, Settings, Copy, Check, ExternalLink, Sparkles, Calendar, Activity } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -16,6 +16,12 @@ import {
   createEmailDraft,
   type DailyDigest,
 } from "@/lib/digest-engine";
+import {
+  getRecentStatusUpdates,
+  formatRelativeTime,
+  type StatusUpdate,
+  type JobStatus,
+} from "@/lib/status-tracker";
 
 export default function DigestPage() {
   const [digest, setDigest] = useState<DailyDigest | null>(null);
@@ -23,8 +29,9 @@ export default function DigestPage() {
   const [hasPrefs, setHasPrefs] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [statusUpdates, setStatusUpdates] = useState<StatusUpdate[]>([]);
 
-  // Load preferences and existing digest on mount
+  // Load preferences, digest, and status updates on mount
   useEffect(() => {
     const prefs = loadPreferences();
     setPreferences(prefs);
@@ -35,6 +42,17 @@ export default function DigestPage() {
     if (existingDigest) {
       setDigest(existingDigest);
     }
+
+    // Load recent status updates
+    setStatusUpdates(getRecentStatusUpdates(5));
+  }, []);
+
+  // Refresh status updates periodically
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStatusUpdates(getRecentStatusUpdates(5));
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleGenerateDigest = async () => {
@@ -72,6 +90,22 @@ export default function DigestPage() {
     if (score >= 60) return "bg-warning text-warning-foreground";
     if (score >= 40) return "bg-muted text-muted-foreground";
     return "bg-muted/50 text-muted-foreground/70";
+  };
+
+  // Get status badge color
+  const getStatusBadgeColor = (status: JobStatus) => {
+    switch (status) {
+      case "Not Applied":
+        return "bg-muted text-muted-foreground";
+      case "Applied":
+        return "bg-blue-100 text-blue-800";
+      case "Rejected":
+        return "bg-red-100 text-red-800";
+      case "Selected":
+        return "bg-success text-success-foreground";
+      default:
+        return "bg-muted text-muted-foreground";
+    }
   };
 
   // No preferences set - show blocking message
@@ -327,6 +361,48 @@ export default function DigestPage() {
         <p className="mt-6 text-center text-xs text-muted-foreground">
           Demo Mode: Daily 9AM trigger simulated manually.
         </p>
+
+        {/* Recent Status Updates Section */}
+        {statusUpdates.length > 0 && (
+          <div className="mt-10">
+            <div className="flex items-center gap-2 mb-4">
+              <Activity className="w-5 h-5 text-muted-foreground" />
+              <h3 className="text-lg font-semibold text-foreground">
+                Recent Status Updates
+              </h3>
+            </div>
+
+            <Card className="border border-border">
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  {statusUpdates.map((update, index) => (
+                    <div
+                      key={`${update.jobId}-${index}`}
+                      className="flex items-center justify-between py-2 border-b border-border last:border-0 last:pb-0"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-foreground truncate">
+                          {update.jobTitle}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {update.company}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3 ml-4">
+                        <Badge className={getStatusBadgeColor(update.status)}>
+                          {update.status}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          {formatRelativeTime(update.updatedAt)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );

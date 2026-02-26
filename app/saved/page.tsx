@@ -5,11 +5,14 @@ import { Bookmark } from "lucide-react";
 import Link from "next/link";
 import { JobCard, JobDetailModal } from "@/components/jobs";
 import { Button } from "@/components/ui/button";
+import { ToastProvider, useToast } from "@/components/ui/toast";
 import { jobs, type Job } from "@/lib/data/jobs";
+import type { JobStatus } from "@/lib/status-tracker";
 
 const SAVED_JOBS_KEY = "savedJobs";
 
-export default function SavedPage() {
+function SavedContent() {
+  const { toast } = useToast();
   const [savedJobIds, setSavedJobIds] = useState<string[]>([]);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,6 +50,10 @@ export default function SavedPage() {
     setIsModalOpen(true);
   };
 
+  const handleStatusChange = (job: Job, status: JobStatus) => {
+    toast(`Status updated: ${status}`, "success");
+  };
+
   return (
     <div className="min-h-[calc(100vh-4rem)] px-6 py-10 lg:px-10">
       <div className="max-w-7xl">
@@ -75,6 +82,7 @@ export default function SavedPage() {
                   isSaved={true}
                   onView={handleViewJob}
                   onSave={toggleSaveJob}
+                  onStatusChange={handleStatusChange}
                 />
               ))}
             </div>
@@ -107,5 +115,13 @@ export default function SavedPage() {
         onSave={toggleSaveJob}
       />
     </div>
+  );
+}
+
+export default function SavedPage() {
+  return (
+    <ToastProvider>
+      <SavedContent />
+    </ToastProvider>
   );
 }

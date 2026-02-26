@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { locations, modes, experiences, sources } from "@/lib/data/jobs";
+import { STATUS_OPTIONS, type JobStatus } from "@/lib/status-tracker";
 
 export interface FilterState {
   keyword: string;
@@ -17,6 +18,7 @@ export interface FilterState {
   mode: string;
   experience: string;
   source: string;
+  status: JobStatus | "all";
   sort: string;
 }
 
@@ -37,7 +39,7 @@ export function FilterBar({ filters, onFilterChange }: FilterBarProps) {
         <span className="text-sm font-medium">Filters</span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-3">
         {/* Keyword Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -116,6 +118,26 @@ export function FilterBar({ filters, onFilterChange }: FilterBarProps) {
             {sources.map((source) => (
               <SelectItem key={source} value={source}>
                 {source}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Status */}
+        <Select
+          value={filters.status}
+          onValueChange={(value) =>
+            updateFilter("status", value as JobStatus | "all")
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="All Statuses" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Statuses</SelectItem>
+            {STATUS_OPTIONS.map((status) => (
+              <SelectItem key={status} value={status}>
+                {status}
               </SelectItem>
             ))}
           </SelectContent>

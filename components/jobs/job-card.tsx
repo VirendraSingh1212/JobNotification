@@ -1,12 +1,26 @@
 "use client";
 
-import { MapPin, Briefcase, Clock, ExternalLink, Bookmark, Eye } from "lucide-react";
+import { MapPin, Briefcase, Clock, ExternalLink, Bookmark, Eye, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { Job } from "@/lib/data/jobs";
 import type { MatchResult } from "@/lib/match-engine";
 import { getMatchBadgeClass } from "@/lib/match-engine";
+import {
+  type JobStatus,
+  getJobStatus,
+  setJobStatus,
+  getStatusBadgeClass,
+  STATUS_OPTIONS,
+} from "@/lib/status-tracker";
+import { useEffect, useState } from "react";
 
 interface JobCardProps {
   job: Job;
@@ -14,9 +28,30 @@ interface JobCardProps {
   matchResult?: MatchResult;
   onView: (job: Job) => void;
   onSave: (jobId: string) => void;
+  onStatusChange?: (job: Job, status: JobStatus) => void;
 }
 
-export function JobCard({ job, isSaved, matchResult, onView, onSave }: JobCardProps) {
+export function JobCard({
+  job,
+  isSaved,
+  matchResult,
+  onView,
+  onSave,
+  onStatusChange,
+}: JobCardProps) {
+  const [status, setStatus] = useState<JobStatus>("Not Applied");
+
+  // Load status on mount
+  useEffect(() => {
+    setStatus(getJobStatus(job.id));
+  }, [job.id]);
+
+  const handleStatusChange = (newStatus: JobStatus) => {
+    setJobStatus(job, newStatus);
+    setStatus(newStatus);
+    onStatusChange?.(job, newStatus);
+  };
+
   const getSourceColor = (source: string) => {
     switch (source) {
       case "LinkedIn":
@@ -99,11 +134,11 @@ export function JobCard({ job, isSaved, matchResult, onView, onSave }: JobCardPr
         </div>
       </CardContent>
 
-      <CardFooter className="px-5 py-4 border-t border-border flex gap-2">
+      <CardFooter className="px-5 py-4 border-t border-border flex flex-wrap gap-2">
         <Button
           variant="outline"
           size="sm"
-          className="flex-1"
+          className="flex-1 min-w-[70px]"
           onClick={() => onView(job)}
         >
           <Eye className="w-4 h-4 mr-2" />
@@ -112,7 +147,7 @@ export function JobCard({ job, isSaved, matchResult, onView, onSave }: JobCardPr
         <Button
           variant={isSaved ? "default" : "outline"}
           size="sm"
-          className="flex-1"
+          className="flex-1 min-w-[70px]"
           onClick={() => onSave(job.id)}
         >
           <Bookmark className={`w-4 h-4 mr-2 ${isSaved ? "fill-current" : ""}`} />
@@ -120,12 +155,48 @@ export function JobCard({ job, isSaved, matchResult, onView, onSave }: JobCardPr
         </Button>
         <Button
           size="sm"
-          className="flex-1"
+          className="flex-1 min-w-[70px]"
           onClick={() => window.open(job.applyUrl, "_blank", "noopener,noreferrer")}
         >
           <ExternalLink className="w-4 h-4 mr-2" />
           Apply
         </Button>
+
+        {/* Status Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className={`flex-1 min-w-[100px] ${getStatusBadgeClass(status)}`}
+            >
+              {status}
+              <ChevronDown className="w-3 h-3 ml-1" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-40">
+            {STATUS_OPTIONS.map((option) => (
+              <DropdownMenuItem
+                key={option}
+                onClick={() => handleStatusChange(option)}
+                className={status === option ? "bg-muted" : ""}
+              >
+                <span
+                  className={`inline-block w-2 h-2 rounded-full mr-2 ${
+                    option === "Not Applied"
+                      ? "bg-muted-foreground"
+                      : option === "Applied"
+                      ? "bg-blue-500"
+                      : option === "Rejected"
+                      ? "bg-red-500"
+                      : "bg-green-500"
+                  }`}
+                />
+                {option}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </CardFooter>
     </Card>
   );

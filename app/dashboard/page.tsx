@@ -7,13 +7,16 @@ import { JobCard, JobDetailModal, FilterBar, type FilterState } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { ToastProvider, useToast } from "@/components/ui/toast";
 import { jobs, type Job } from "@/lib/data/jobs";
 import { calculateMatchScore, loadPreferences, hasPreferences, type MatchResult } from "@/lib/match-engine";
 import type { UserPreferences } from "@/app/settings/page";
+import { getJobStatus, type JobStatus } from "@/lib/status-tracker";
 
 const SAVED_JOBS_KEY = "savedJobs";
 
-export default function DashboardPage() {
+function DashboardContent() {
+  const { toast } = useToast();
   const [savedJobs, setSavedJobs] = useState<string[]>([]);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,6 +28,7 @@ export default function DashboardPage() {
     mode: "all",
     experience: "all",
     source: "all",
+    status: "all",
     sort: "latest",
   });
 
@@ -108,6 +112,11 @@ export default function DashboardPage() {
       result = result.filter((job) => job.source === filters.source);
     }
 
+    // Status filter (AND logic)
+    if (filters.status && filters.status !== "all") {
+      result = result.filter((job) => getJobStatus(job.id) === filters.status);
+    }
+
     // Sort
     switch (filters.sort) {
       case "latest":
@@ -149,6 +158,10 @@ export default function DashboardPage() {
   const handleViewJob = (job: Job) => {
     setSelectedJob(job);
     setIsModalOpen(true);
+  };
+
+  const handleStatusChange = (job: Job, status: JobStatus) => {
+    toast(`Status updated: ${status}`, "success");
   };
 
   const prefsSet = hasPreferences();
@@ -215,6 +228,7 @@ export default function DashboardPage() {
                 matchResult={jobMatchResults.get(job.id)}
                 onView={handleViewJob}
                 onSave={toggleSaveJob}
+                onStatusChange={handleStatusChange}
               />
             ))}
           </div>
@@ -250,5 +264,13 @@ export default function DashboardPage() {
         onSave={toggleSaveJob}
       />
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <ToastProvider>
+      <DashboardContent />
+    </ToastProvider>
   );
 }
