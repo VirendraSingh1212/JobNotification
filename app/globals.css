@@ -1,0 +1,161 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Design System: Job Notification App */
+/* Philosophy: Calm, intentional, coherent, confident */
+
+@theme inline {
+  /* Core Colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  
+  /* Status Colors */
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  
+  /* Typography */
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-mono);
+  
+  /* Radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  /* Design System Variables */
+  
+  /* Background: Off-white, not pure white */
+  --background: #F7F6F3;
+  --foreground: #111111;
+  
+  /* Primary: Deep red accent */
+  --primary: #8B0000;
+  --primary-foreground: #FFFFFF;
+  
+  /* Secondary: Subtle gray for outlined buttons */
+  --secondary: transparent;
+  --secondary-foreground: #111111;
+  
+  /* Muted: For secondary text and backgrounds */
+  --muted: #E8E6E1;
+  --muted-foreground: #6B6B6B;
+  
+  /* Accent: Same as primary for consistency */
+  --accent: #8B0000;
+  --accent-foreground: #FFFFFF;
+  
+  /* Destructive: Muted red for errors */
+  --destructive: #B91C1C;
+  --destructive-foreground: #FFFFFF;
+  
+  /* Success: Muted green */
+  --success: #4A7C59;
+  --success-foreground: #FFFFFF;
+  
+  /* Warning: Muted amber */
+  --warning: #B45309;
+  --warning-foreground: #FFFFFF;
+  
+  /* Border: Subtle, intentional */
+  --border: #D4D0C8;
+  --input: #D4D0C8;
+  --ring: #8B0000;
+  
+  /* Card: Slightly different from background */
+  --card: #FFFFFF;
+  --card-foreground: #111111;
+  
+  /* Popover */
+  --popover: #FFFFFF;
+  --popover-foreground: #111111;
+  
+  /* Radius: Consistent 6px */
+  --radius: 6px;
+  
+  /* Fonts */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Georgia', 'Times New Roman', serif;
+  --font-mono: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    font-size: 16px;
+  }
+  
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+    line-height: 1.6;
+  }
+  
+  /* Typography Scale */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+  }
+  
+  h1 {
+    font-size: 2.5rem;
+    line-height: 1.2;
+  }
+  
+  h2 {
+    font-size: 2rem;
+  }
+  
+  h3 {
+    font-size: 1.5rem;
+  }
+  
+  h4 {
+    font-size: 1.25rem;
+  }
+  
+  p {
+    max-width: 720px;
+    line-height: 1.7;
+  }
+  
+  /* Focus States */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+    transition: ring-offset 150ms ease-in-out;
+  }
+  
+  /* Smooth transitions for interactive elements */
+  button, a, input, textarea, select {
+    transition: all 150ms ease-in-out;
+  }
+}
